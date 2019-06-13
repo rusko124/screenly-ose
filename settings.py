@@ -24,7 +24,7 @@ DEFAULTS = {
         'websocket_port': '9999',
         'use_ssl': False,
         'analytics_opt_out': False,
-        'auth_backend': 'auth'
+        'auth_backend': ''
     },
     'viewer': {
         'player_name': '',
@@ -134,7 +134,9 @@ class ScreenlySettings(IterableUserDict):
 
     @property
     def auth(self):
-        return self.auth_backends[ self['auth_backend'] ]
+        backend_name = self['auth_backend']
+        if backend_name in self.auth_backends:
+            return self.auth_backends[ self['auth_backend'] ]
 
 
 settings = ScreenlySettings()
