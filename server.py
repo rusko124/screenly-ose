@@ -43,7 +43,8 @@ from lib.utils import url_fails
 from lib.utils import validate_url
 from lib.utils import is_balena_app, is_demo_node
 
-from settings import auth_basic, CONFIGURABLE_SETTINGS, DEFAULTS, LISTEN, PORT, settings, ZmqPublisher, ZmqCollector
+from settings import CONFIGURABLE_SETTINGS, DEFAULTS, LISTEN, PORT, settings, ZmqPublisher, ZmqCollector
+from auth import authorized
 
 HOME = getenv('HOME', '/home/pi')
 
@@ -405,7 +406,7 @@ def api_response(view):
 
 
 class Assets(Resource):
-    method_decorators = [auth_basic]
+    method_decorators = [authorized]
 
     @swagger.doc({
         'responses': {
@@ -468,7 +469,7 @@ class Assets(Resource):
 
 
 class Asset(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'parameters': [
@@ -562,7 +563,7 @@ class Asset(Resource):
 
 
 class AssetsV1_1(Resource):
-    method_decorators = [auth_basic]
+    method_decorators = [authorized]
 
     @swagger.doc({
         'responses': {
@@ -608,7 +609,7 @@ class AssetsV1_1(Resource):
 
 
 class AssetV1_1(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'parameters': [
@@ -688,7 +689,7 @@ class AssetV1_1(Resource):
 
 
 class AssetsV1_2(Resource):
-    method_decorators = [auth_basic]
+    method_decorators = [authorized]
 
     @swagger.doc({
         'responses': {
@@ -741,7 +742,7 @@ class AssetsV1_2(Resource):
 
 
 class AssetV1_2(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'parameters': [
@@ -835,7 +836,7 @@ class AssetV1_2(Resource):
 
 
 class FileAsset(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'parameters': [
@@ -882,7 +883,7 @@ class FileAsset(Resource):
 
 
 class PlaylistOrder(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'parameters': [
@@ -910,7 +911,7 @@ class PlaylistOrder(Resource):
 
 
 class Backup(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'responses': {
@@ -928,7 +929,7 @@ class Backup(Resource):
 
 
 class Recover(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'parameters': [
@@ -959,7 +960,7 @@ class Recover(Resource):
 
 
 class ResetWifiConfig(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'responses': {
@@ -1005,7 +1006,7 @@ class ResetWifiConfig(Resource):
 
 
 class Info(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     def get(self):
         viewlog = None
@@ -1029,7 +1030,7 @@ class Info(Resource):
 
 
 class AssetsControl(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'parameters': [
@@ -1059,7 +1060,7 @@ class AssetsControl(Resource):
 
 
 class AssetContent(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'parameters': [
@@ -1118,7 +1119,7 @@ class AssetContent(Resource):
 
 
 class ViewerCurrentAsset(Resource):
-    method_decorators = [api_response, auth_basic]
+    method_decorators = [api_response, authorized]
 
     @swagger.doc({
         'responses': {
@@ -1191,7 +1192,7 @@ else:
 
 
 @app.route('/')
-@auth_basic
+@authorized
 def viewIndex():
     player_name = settings['player_name']
     my_ip = urlparse(request.host_url).hostname
@@ -1212,7 +1213,7 @@ def viewIndex():
 
 
 @app.route('/settings', methods=["GET", "POST"])
-@auth_basic
+@authorized
 def settings_page():
     context = {'flash': None}
 
@@ -1225,55 +1226,52 @@ def settings_page():
             current_pass = '' if current_pass == '' else hashlib.sha256(current_pass).hexdigest()
             new_pass = '' if new_pass == '' else hashlib.sha256(new_pass).hexdigest()
             new_pass2 = '' if new_pass2 == '' else hashlib.sha256(new_pass2).hexdigest()
+            current_pass_correct = current_pass == settings['password']
 
             new_user = request.form.get('user', '')
             use_auth = request.form.get('use_auth', '') == 'on'
 
-            # Handle auth components
-            if settings['password'] != '':  # if password currently set,
-                if new_user != settings['user']:  # trying to change user
-                    # should have current password set. Optionally may change password.
-                    if current_pass == '':
-                        if not use_auth:
-                            raise ValueError("Must supply current password to disable authentication")
-                        raise ValueError("Must supply current password to change username")
-                    if current_pass != settings['password']:
-                        raise ValueError("Incorrect current password.")
+            if use_auth:
+                # Handle auth components
+                if settings['password'] != '':  # if password currently set,
+                    if new_user != settings['user']:  # trying to change user
+                        # should have current password set. Optionally may change password.
+                        if not current_pass:
+                            raise ValueError("Must supply current password to change username")
+                        if not current_pass_correct:
+                            raise ValueError("Incorrect current password.")
 
-                    settings['user'] = new_user
+                        settings['user'] = new_user
 
-                if new_pass != '' and use_auth:
-                    if current_pass == '':
-                        raise ValueError("Must supply current password to change password")
-                    if current_pass != settings['password']:
-                        raise ValueError("Incorrect current password.")
+                    if new_pass != '':
+                        if not current_pass:
+                            raise ValueError("Must supply current password to change password")
+                        if not current_pass_correct:
+                            raise ValueError("Incorrect current password.")
 
-                    if new_pass2 != new_pass:  # changing password
-                        raise ValueError("New passwords do not match!")
+                        if new_pass2 != new_pass:  # changing password
+                            raise ValueError("New passwords do not match!")
 
-                    settings['password'] = new_pass
+                        settings['password'] = new_pass
 
-                if new_pass == '' and not use_auth and new_pass2 == '':
-                    # trying to disable authentication
-                    if current_pass == '':
-                        raise ValueError("Must supply current password to disable authentication")
-                    settings['password'] = ''
-
-            else:  # no current password
-                if new_user != '':  # setting username and password
-                    if new_pass != '' and new_pass != new_pass2:
-                        raise ValueError("New passwords do not match!")
-                    if new_pass == '':
-                        raise ValueError("Must provide password")
-                    settings['user'] = new_user
-                    settings['password'] = new_pass
+                else:  # no current password
+                    if new_user != '':  # setting username and password
+                        if new_pass != '' and new_pass != new_pass2:
+                            raise ValueError("New passwords do not match!")
+                        if new_pass == '':
+                            raise ValueError("Must provide password")
+                        settings['user'] = new_user
+                        settings['password'] = new_pass
+                    else:
+                        raise ValueError("Must provide username")
+            elif settings['auth_backend'] != '':
+                if not current_pass:
+                    raise ValueError("Must supply current password to disable authentication")
+                if not current_pass_correct:
+                    raise ValueError("Incorrect current password.")
 
             for field, default in CONFIGURABLE_SETTINGS.items():
                 value = request.form.get(field, default)
-
-                # skip user and password as they should be handled already.
-                if field == "user" or field == "password":
-                    continue
 
                 if not value and field in ['default_duration', 'default_streaming_duration']:
                     value = str(0)
@@ -1282,6 +1280,7 @@ def settings_page():
                     value = value == 'on'
                 settings[field] = value
 
+            settings['auth_backend'] = 'auth_basic' if use_auth else ''
             settings.save()
             publisher = ZmqPublisher.get_instance()
             publisher.send_to_viewer('reload')
@@ -1297,21 +1296,18 @@ def settings_page():
     for field, default in DEFAULTS['viewer'].items():
         context[field] = settings[field]
 
-    context['user'] = settings['user']
-    context['password'] = "password" if settings['password'] != "" else ""
-
-    context['is_balena'] = is_balena_app()
-
-    if not settings['user'] or not settings['password']:
-        context['use_auth'] = False
-    else:
-        context['use_auth'] = True
+    context.update({
+        'user': settings['user'],
+        'need_current_password': settings['password'] != "",
+        'is_balena': is_balena_app(),
+        'use_auth': bool(settings['auth_backend'])
+    })
 
     return template('settings.html', **context)
 
 
 @app.route('/system-info')
-@auth_basic
+@authorized
 def system_info():
     viewlog = None
     try:
@@ -1361,7 +1357,7 @@ def system_info():
 
 
 @app.route('/integrations')
-@auth_basic
+@authorized
 def integrations():
 
     context = {
@@ -1433,13 +1429,14 @@ def dated_url_for(endpoint, **values):
 
 
 @app.route('/static_with_mime/<string:path>')
-@auth_basic
+@authorized
 def static_with_mime(path):
     mimetype = request.args['mime'] if 'mime' in request.args else 'auto'
     return send_from_directory(directory='static', filename=path, mimetype=mimetype)
 
 
-if __name__ == "__main__":
+@app.before_first_request
+def main():
     # Make sure the asset folder exist. If not, create it
     if not path.isdir(settings['assetdir']):
         mkdir(settings['assetdir'])
@@ -1453,6 +1450,8 @@ if __name__ == "__main__":
             if cursor.fetchone() is None:
                 cursor.execute(assets_helper.create_assets_table)
 
+
+if __name__ == "__main__":
     config = {
         'bind': '{}:{}'.format(LISTEN, PORT),
         'threads': 2,
