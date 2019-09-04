@@ -283,11 +283,11 @@ class WebTest(unittest.TestCase):
         with Browser() as browser:
             browser.visit(main_page_url)
 
-            asset_x_for_drag = browser.find_by_id(asset_x['asset_id'])
+            asset_x_to_reorder = browser.find_by_id(asset_x['asset_id'])
             sleep(1)
 
-            asset_y_to_reorder = browser.find_by_id(asset_y['asset_id'])
-            asset_x_for_drag.drag_and_drop(asset_y_to_reorder)
+            asset_y_for_drag = browser.find_by_id(asset_y['asset_id'])
+            asset_y_for_drag.drag_and_drop(asset_x_to_reorder)
             sleep(3)  # backend need time to process request
 
         with db.conn(settings['database']) as conn:
