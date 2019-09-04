@@ -244,7 +244,7 @@ class WebTest(unittest.TestCase):
 
         with Browser() as browser:
             browser.visit(main_page_url)
-            wait_for_and_do(browser, '.toggle .on', lambda btn: btn.click())
+            wait_for_and_do(browser, '.toggle', lambda btn: btn.click())
             sleep(3)  # backend need time to process request
 
         with db.conn(settings['database']) as conn:
@@ -263,7 +263,7 @@ class WebTest(unittest.TestCase):
         with Browser() as browser:
             browser.visit(main_page_url)
 
-            wait_for_and_do(browser, '.toggle .off', lambda btn: btn.click())
+            wait_for_and_do(browser, '.toggle', lambda btn: btn.click())
             sleep(3)  # backend need time to process request
 
         with db.conn(settings['database']) as conn:
