@@ -14,7 +14,7 @@ addons:
 before_install:
   - sudo add-apt-repository ppa:mc3man/trusty-media -y
   - sudo apt-get update -q
-  - sudo apt-get install ffmpeg ffserver
+  - sudo apt-get install ffmpeg
 install:
   - pip install -U pip
   - pip install -r requirements.txt
