@@ -12,6 +12,8 @@ addons:
       - mplayer
       - python-gobject
       - python-setuptools
+before_install:
+  - sudo apt-get install mplayer
 install:
   - pip install -U pip
   - pip install -r requirements.txt
