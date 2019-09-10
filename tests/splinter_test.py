@@ -219,8 +219,8 @@ class WebTest(unittest.TestCase):
             self.assertEqual(len(assets), 1)
             asset = assets[0]
 
-            self.assertEqual(asset['name'], u'rtmp://localhost:1935/app/video.flv')
-            self.assertEqual(asset['uri'], u'rtmp://localhost:1935/app/video.flv')
+            self.assertEqual(asset['name'], u'rtsp://localhost:8091/asset.mov')
+            self.assertEqual(asset['uri'], u'rtsp://localhost:8091/asset.mov')
             self.assertEqual(asset['mimetype'], u'streaming')
             self.assertEqual(asset['duration'], settings['default_streaming_duration'])
 
