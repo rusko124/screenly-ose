@@ -32,7 +32,7 @@ before_script:
   - cp tests/assets/asset.mov /tmp/asset.mov
   - export DISPLAY=:99.0
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16
-  - cp tests/config/ffserver.conf /etc/ffserver.conf
+  - sudo cp tests/config/ffserver.conf /etc/ffserver.conf
   - ffserver 0<&- &>/dev/null &
   - sleep 3
   - python server.py &
