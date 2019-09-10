@@ -14,7 +14,7 @@ addons:
 before_install:
   - sudo add-apt-repository ppa:mc3man/trusty-media -y
   - sudo apt-get update -q
-  - sudo apt-get install ffmpeg
+  - sudo apt-get install ffmpeg ffserver
 install:
   - pip install -U pip
   - pip install -r requirements.txt
@@ -34,6 +34,7 @@ before_script:
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16
   - sudo cp tests/config/ffserver.conf /etc/ffserver.conf
   - /usr/bin/ffserver &
+  - /usr/bin/ffmpeg &
   - sleep 3
   - python server.py &
   - sleep 3 # give xvfb some time to start
