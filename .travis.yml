@@ -6,20 +6,20 @@ virtualenv:
 addons:
   firefox: "45.0"
   apt:
+    update: true
     packages:
       - net-tools
       - mplayer
       - python-gobject
       - python-setuptools
-before_install:
-  - sudo add-apt-repository ppa:mc3man/trusty-media -y
-  - sudo apt-get update -q
-  - sudo apt-get install ffmpeg
 install:
   - pip install -U pip
   - pip install -r requirements.txt
   - pip install -r requirements.dev.txt
 before_script:
+  - wget --no-check-certificate "https://download.cpy.re/ffmpeg/ffmpeg-release-4.0.3-64bit-static.tar.xz"
+  - tar xf ffmpeg-release-4.0.3-64bit-static.tar.xz
+  - sudo cp ffmpeg-*-64bit-static/{ffmpeg,ffprobe,ffserver} /usr/bin
   - mkdir -p ~/.screenly ~/.config/uzbl/ ~/screenly_assets
   - cp ansible/roles/screenly/files/uzbl-config ~/.config/uzbl/config-screenly
   - cp ansible/roles/screenly/files/screenly.conf ~/.screenly/
@@ -33,8 +33,7 @@ before_script:
   - export DISPLAY=:99.0
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16
   - sudo cp tests/config/ffserver.conf /etc/ffserver.conf
-  - /usr/bin/ffserver &
-  - /usr/bin/ffmpeg &
+  - /usr/bin/ffserver -f /etc/ffserver.conf &
   - sleep 3
   - python server.py &
   - sleep 3 # give xvfb some time to start
