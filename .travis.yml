@@ -6,14 +6,15 @@ virtualenv:
 addons:
   firefox: "45.0"
   apt:
-    update: true
     packages:
       - net-tools
       - mplayer
       - python-gobject
       - python-setuptools
 before_install:
-  - sudo apt-get install mplayer
+  - sudo add-apt-repository ppa:mc3man/trusty-media -y
+  - sudo apt-get update -q
+  - sudo apt-get install ffmpeg
 install:
   - pip install -U pip
   - pip install -r requirements.txt
@@ -21,7 +22,7 @@ install:
 before_script:
   - wget --no-check-certificate "https://download.cpy.re/ffmpeg/ffmpeg-release-3.0.2-64bit-static.tar.xz"
   - tar xf ffmpeg-release-3.0.2-64bit-static.tar.xz
-  - sudo cp ffmpeg-3.0.2-64bit-static/{ffmpeg,ffprobe,ffserver} /usr/bin
+  - sudo cp ffmpeg-3.0.2-64bit-static/ffserver /usr/bin
   - mkdir -p ~/.screenly ~/.config/uzbl/ ~/screenly_assets
   - cp ansible/roles/screenly/files/uzbl-config ~/.config/uzbl/config-screenly
   - cp ansible/roles/screenly/files/screenly.conf ~/.screenly/
