@@ -204,7 +204,7 @@ class WebTest(unittest.TestCase):
             wait_for_and_do(browser, '#add-asset-button', lambda btn: btn.click())
             sleep(1)
 
-            wait_for_and_do(browser, 'input[name="uri"]', lambda field: field.fill('rtmp://localhost:1935/app/video.flv'))
+            wait_for_and_do(browser, 'input[name="uri"]', lambda field: field.fill('rtsp://localhost:8091/asset.mov'))
             sleep(1)
 
             wait_for_and_do(browser, '#add-form', lambda form: form.click())
