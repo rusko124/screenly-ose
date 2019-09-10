@@ -34,6 +34,7 @@ before_script:
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16
   - sudo cp tests/config/ffserver.conf /etc/ffserver.conf
   - /usr/bin/ffserver -f /etc/ffserver.conf &
+  - mplayer -identify -frames 0 -nosound rtsp://localhost:8091/asset.mov
   - sleep 3
   - python server.py &
   - sleep 3 # give xvfb some time to start
