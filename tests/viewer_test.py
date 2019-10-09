@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from nose.tools import ok_, eq_
+from nose.tools import eq_
 from nose.plugins.attrib import attr
 import mock
 import unittest
@@ -52,10 +52,9 @@ class TestEmptyPl(ViewerTestCase):
 class TestLoadBrowser(ViewerTestCase):
     @mock.patch('pydbus.SessionBus', mock.MagicMock())
     def test_setup(self):
-        self.m_cmd.return_value.return_value.process.stdout = 'Screenly service start'
-        self.p_cmd.start()
+        self.p_loadb.start()
         self.u.setup()
-        self.p_cmd.stop()
+        self.p_loadb.stop()
 
     def load_browser(self):
         self.m_cmd.return_value.return_value.process.stdout = 'Screenly service start'
