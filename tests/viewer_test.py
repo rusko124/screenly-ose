@@ -50,7 +50,7 @@ class TestEmptyPl(ViewerTestCase):
 
 
 class TestLoadBrowser(ViewerTestCase):
-    @mock.patch('pydbus.SessionBus.get', mock.MagicMock())
+    @mock.patch('pydbus.SessionBus', mock.MagicMock())
     def test_setup(self):
         m_webview = mock.Mock(name='ScreenlyWebview')
         self.m_cmd.return_value = m_webview
