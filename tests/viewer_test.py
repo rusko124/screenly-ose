@@ -24,9 +24,6 @@ class ViewerTestCase(unittest.TestCase):
         self.m_cmd = mock.Mock(name='m_cmd')
         self.p_cmd = mock.patch.object(self.u.sh, 'Command', self.m_cmd)
 
-        self.m_send = mock.Mock(name='m_send')
-        self.p_send = mock.patch.object(self.u, 'browser_send', self.m_send)
-
         self.m_killall = mock.Mock(name='killall')
         self.p_killall = mock.patch.object(self.u.sh, 'killall', self.m_killall)
 
@@ -52,55 +49,23 @@ class TestEmptyPl(ViewerTestCase):
             self.u.main()
 
 
-class TestBrowserSend(ViewerTestCase):
-    def test_send(self):
-        self.p_cmd.start()
-        self.p_send.start()
-        self.u.setup()
-        self.u.load_browser()
-        self.p_send.stop()
-        self.p_cmd.stop()
-
-        m_put = mock.Mock(name='uzbl_put')
-        self.m_cmd.return_value.return_value.process.stdin.put = m_put
-
-        self.u.browser_send('test_cmd')
-        m_put.assert_called_once_with('test_cmd\n')
-
-        self.u.browser_send('event TITLE 标题')
-        m_put.assert_called_with('event TITLE \xe6\xa0\x87\xe9\xa2\x98\n')
-
-    def test_dead(self):
-        self.p_loadb.start()
-        self.u.browser_send(None)
-        self.m_loadb.assert_called_once()
-        self.p_loadb.stop()
-
-
-class TestBrowserClear(ViewerTestCase):
-    def test_clear(self):
-        with mock.patch.object(self.u, 'browser_url', mock.Mock()) as m_url:
-            self.u.setup()
-            self.u.browser_clear()
-            m_url.assert_called_once()
-
-
 class TestLoadBrowser(ViewerTestCase):
+    @mock.patch('pydbus.SessionBus.get', mock.MagicMock())
     def test_setup(self):
+        m_webview = mock.Mock(name='ScreenlyWebview')
+        self.m_cmd.return_value = m_webview
+        self.p_cmd.start()
         self.u.setup()
-        ok_(os.path.isdir(self.u.SCREENLY_HTML))
+        self.p_cmd.stop()
 
     def load_browser(self):
-        m_uzbl = mock.Mock(name='uzbl')
-        self.m_cmd.return_value = m_uzbl
+        m_webview = mock.Mock(name='ScreenlyWebview')
+        self.m_cmd.return_value = m_webview
         self.p_cmd.start()
-        self.p_send.start()
         self.u.load_browser()
-        self.p_send.stop()
         self.p_cmd.stop()
-        self.m_cmd.assert_called_once_with('uzbl-browser')
-        m_uzbl.assert_called_once_with(print_events=True, config='-', uri=None, _bg=True)
-        m_send.assert_called_once()
+        self.m_cmd.assert_called_once_with('ScreenlyWebview')
+        m_webview.assert_called_once_with(print_events=True, config='-', uri=None, _bg=True)
 
 
 class TestSignalHandlers(ViewerTestCase):
