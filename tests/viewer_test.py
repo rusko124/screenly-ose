@@ -56,7 +56,7 @@ class TestLoadBrowser(ViewerTestCase):
         self.u.setup()
         self.p_loadb.stop()
 
-    def load_browser(self):
+    def test_load_browser(self):
         self.m_cmd.return_value.return_value.process.stdout = 'Screenly service start'
         self.p_cmd.start()
         self.u.load_browser()
