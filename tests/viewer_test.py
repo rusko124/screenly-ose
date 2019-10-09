@@ -52,20 +52,17 @@ class TestEmptyPl(ViewerTestCase):
 class TestLoadBrowser(ViewerTestCase):
     @mock.patch('pydbus.SessionBus', mock.MagicMock())
     def test_setup(self):
-        m_webview = mock.Mock(name='ScreenlyWebview')
-        self.m_cmd.return_value = m_webview
+        self.m_cmd.return_value.return_value.process.stdout = 'Screenly service start'
         self.p_cmd.start()
         self.u.setup()
         self.p_cmd.stop()
 
     def load_browser(self):
-        m_webview = mock.Mock(name='ScreenlyWebview')
-        self.m_cmd.return_value = m_webview
+        self.m_cmd.return_value.return_value.process.stdout = 'Screenly service start'
         self.p_cmd.start()
         self.u.load_browser()
         self.p_cmd.stop()
         self.m_cmd.assert_called_once_with('ScreenlyWebview')
-        m_webview.assert_called_once_with(print_events=True, config='-', uri=None, _bg=True)
 
 
 class TestSignalHandlers(ViewerTestCase):
